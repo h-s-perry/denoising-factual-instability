@@ -385,7 +385,7 @@ def test_loader_pins_all_assets_and_restores_scoped_compatibility(
                 "revision": REVISION,
                 "code_revision": CODE_REVISION,
                 "trust_remote_code": True,
-                "torch_dtype": torch.bfloat16,
+                "dtype": torch.bfloat16,
                 "low_cpu_mem_usage": True,
             },
         )

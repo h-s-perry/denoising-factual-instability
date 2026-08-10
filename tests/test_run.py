@@ -9,13 +9,22 @@ from typing import Any
 import numpy as np
 import pytest
 
+import dfi.cli as cli
 import dfi.pipeline as pipeline
+from dfi.cli import main
 from dfi.config import DFIConfig, load_config
 from dfi.data import load_jsonl
-from dfi.llada import AnalyticResult, LLaDAModelSpec, WorkRequest, plan_length_buckets
+from dfi.llada import (
+    AnalyticResult,
+    LLaDAModelSpec,
+    ParityMismatchError,
+    WorkRequest,
+    plan_length_buckets,
+)
 from dfi.masking import MaskChoice, stable_work_id
 from dfi.pipeline import (
     build_inference_plan,
+    evaluate_run_bundle,
     execute_inference_requests,
     read_parquet_rows,
     run_experiment,
@@ -126,7 +135,7 @@ class FakeBackend:
             target_ids=(target,),
             temperature=1.0,
             dtype="bfloat16",
-            inference_backend="llada-full-logits-v1",
+            inference_backend="llada-full-logits-v2",
         )
         return WorkRequest(
             work_id=work_id,
@@ -299,6 +308,7 @@ def test_cold_run_then_fresh_local_warm_run_uses_zero_model_forwards(tmp_path: P
         cold_receipt["environment"]
     ]
     assert warm_receipt["cache"]["reused_creation_environments"]["local_resume"] == []
+    assert warm_receipt["results"]["sha256"] == cold_receipt["results"]["sha256"]
     assert read_parquet_rows(warm / "results.parquet") == cold_rows
 
 
@@ -334,6 +344,30 @@ def test_completed_run_recovery_only_cleans_crash_leftovers(tmp_path: Path) -> N
     assert (completed / "results.parquet").read_bytes() == original_results
     assert set(path.name for path in completed.iterdir()) == {"results.parquet", "run.json"}
     assert not staging.exists()
+
+
+def test_evaluate_run_bundle_recomputes_and_rejects_changed_metrics(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    config_path, config = _write_config(tmp_path)
+    completed = run_experiment(
+        config,
+        config_path=config_path,
+        backend=FakeBackend(),
+        allow_local_cache_for_testing=True,
+    )
+    receipt = _receipt(completed)
+    assert evaluate_run_bundle(completed) == receipt["evaluation"]
+    assert main(["evaluate", str(completed)]) == 0
+    assert json.loads(capsys.readouterr().out) == receipt["evaluation"]
+
+    receipt["evaluation"]["n_mask_rows"] += 1
+    (completed / "run.json").write_text(
+        json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="stored evaluation does not match"):
+        evaluate_run_bundle(completed)
 
 
 def test_corrupt_drive_partition_is_recomputed_in_isolation(tmp_path: Path) -> None:
@@ -494,3 +528,30 @@ def test_runner_halves_once_on_oom_and_fails_if_oom_recurs() -> None:
             max_batch_tokens=64,
             max_batch_rows=4,
         )
+
+
+def test_cli_summarizes_parity_failure_without_traceback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    config_path, _ = _write_config(tmp_path)
+    report = {
+        "failure_count": 107,
+        "failures": ["numeric mismatch"],
+        "exact_checks": {"work_ids": True},
+        "numeric_checks": {"max_absolute_error": {"ce": 0.07}},
+        "batch_plan": {"batch_count": 1},
+    }
+
+    def fail(*args: Any, **kwargs: Any) -> Path:
+        del args, kwargs
+        raise ParityMismatchError(report)
+
+    monkeypatch.setattr(cli, "run_experiment", fail)
+    assert cli.main(["run", str(config_path), "--parity"]) == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "scalar/global parity gate failed" in captured.err
+    assert '"failed_comparisons": 107' in captured.err
+    assert "Traceback" not in captured.err
