@@ -31,7 +31,16 @@ reviewed v2 JSONL
 
 ## First A100 run
 
-The runnable LLaDA path is intentionally not admitted in the offline-core slice. It will use one complete TOML config, three immutable Hugging Face revisions, BF16 on a named A100, a local-SSD hot path, and an explicit Google Drive cache root. Scalar/global-batch parity and a cold-to-warm zero-forward Drive test must pass before that slice is accepted.
+After mounting Google Drive at `/content/drive` in an A100 Colab runtime and unpacking the repository onto `/content` local SSD:
+
+```bash
+uv sync --frozen --extra gpu --no-editable
+uv run --no-sync dfi run configs/a100-smoke.toml --parity
+```
+
+The runner loads one pinned LLaDA model/tokenizer/remote-code commit in BF16, performs full-logit analytic scoring, seals local results, and publishes immutable cache shards to the explicit Drive root in the config. `--parity` is bounded to prior-arm mask 0 and checks scalar/global identities, numeric agreement, claim ordering, and matched-pair decisions. Run the same config again without `--parity` from a fresh local session to test zero-forward Drive reuse.
+
+The checked-in smoke dataset is synthetic: eight claims in four matched families. A successful model run validates execution, not the blueprint's audited-anchor or scientific-admission gate. `configs/a100-throughput.toml` is a separate performance-only 4,096-request workload; its provisional batch limits are not accepted defaults until the named-A100 baseline is recorded.
 
 ## Final run files
 
