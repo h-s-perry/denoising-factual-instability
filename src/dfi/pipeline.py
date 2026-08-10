@@ -1896,6 +1896,62 @@ def write_run_bundle(
     return results, run_json
 
 
+def evaluate_run_bundle(run_directory: str | Path) -> dict[str, Any]:
+    """Verify a sealed run and recompute its aggregate metrics without inference."""
+
+    directory = Path(run_directory).resolve(strict=False)
+    if not directory.is_dir() or directory.is_symlink():
+        raise ValueError(f"run directory is missing or unsafe: {directory}")
+    if {path.name for path in directory.iterdir()} != {"results.parquet", "run.json"}:
+        raise ValueError("a sealed run directory must contain exactly results.parquet and run.json")
+    run_path = directory / "run.json"
+    results_path = directory / "results.parquet"
+    if run_path.is_symlink() or results_path.is_symlink():
+        raise ValueError("sealed run files must not be symlinks")
+    try:
+        receipt = json.loads(run_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError("run receipt is malformed") from exc
+    if (
+        not isinstance(receipt, dict)
+        or receipt.get("schema_version") != RUN_SCHEMA_VERSION
+        or receipt.get("status") != "complete"
+    ):
+        raise ValueError("run receipt is not a compatible complete receipt")
+    result_receipt = receipt.get("results")
+    if not isinstance(result_receipt, dict) or set(result_receipt) != {
+        "path",
+        "sha256",
+        "schema",
+        "row_count",
+    }:
+        raise ValueError("run result receipt has the wrong schema")
+    if (
+        result_receipt["path"] != "results.parquet"
+        or result_receipt["schema"] != RESULT_SCHEMA_VERSION
+    ):
+        raise ValueError("run result receipt names an unexpected file or schema")
+    if sha256_file(results_path) != result_receipt["sha256"]:
+        raise ValueError("results.parquet does not match the run receipt")
+    rows = read_parquet_rows(results_path)
+    if len(rows) != result_receipt["row_count"]:
+        raise ValueError("results.parquet row count does not match the run receipt")
+    interpretation_allowed = receipt.get("interpretation_allowed")
+    interpretation_reason = receipt.get("interpretation_reason")
+    if not isinstance(interpretation_allowed, bool):
+        raise ValueError("run interpretation_allowed must be boolean")
+    if not isinstance(interpretation_reason, str) or not interpretation_reason.strip():
+        raise ValueError("run interpretation_reason must be a non-empty string")
+    recomputed = evaluate_rows(
+        rows,
+        interpretation_allowed=interpretation_allowed,
+        interpretation_reason=interpretation_reason,
+    )
+    if not _same_canonical_json(receipt.get("evaluation"), recomputed):
+        raise ValueError("stored evaluation does not match the sealed sufficient statistics")
+    return recomputed
+
+
 def execute_inference_requests(
     backend: Any,
     requests: Sequence[WorkRequest],

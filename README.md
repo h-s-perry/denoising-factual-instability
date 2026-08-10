@@ -31,7 +31,7 @@ reviewed v2 JSONL
 
 ## First A100 run
 
-After mounting Google Drive at `/content/drive` in an A100 Colab runtime and unpacking the repository onto `/content` local SSD:
+Use the unexecuted [Colab walkthrough](notebooks/walkthrough.ipynb) to verify a Drive-hosted repository ZIP, stage it on `/content` local SSD, install the locked GPU environment, and run the complete smoke/cache flow. The equivalent runner command after Drive is mounted and the repository is unpacked is:
 
 ```bash
 uv sync --frozen --extra gpu --no-editable
@@ -49,7 +49,7 @@ A sealed run contains only:
 - `results.parquet`: compact per-mask sufficient statistics and identifiers;
 - `run.json`: resolved provenance, environment, cache/accounting, result hash, metrics, and the interpretation gate.
 
-Partial partitions, caches, model weights, full datasets, and executed notebook output are never final run files and are excluded from Git.
+`dfi evaluate <run-directory>` verifies those files and recomputes aggregate metrics from the stored sufficient statistics without a model forward. Partial partitions, caches, model weights, full datasets, and executed notebook output are never final run files and are excluded from Git.
 
 ## Scientific interpretation warning
 

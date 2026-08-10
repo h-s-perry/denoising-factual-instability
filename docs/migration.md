@@ -29,8 +29,8 @@ Blueprint provenance:
 
 ## Fixture decision
 
-The archived four-candidate file has SHA-256 `ed590ea6f174c46da21b7c37d05288a3683900b907892e3b397f250cb9aebc42`. It is a knowledge-audit candidate format, not schema-valid v2 scored JSONL, and it lacks redistribution-license fields. The archive contains no saved full marginal/logit fixture. Accordingly, PR 1 uses self-authored synthetic v2 claims and synthetic saved marginals with `interpretation_allowed=false`. The four historical candidates remain private provenance for a fresh, revision-pinned A100 parity capture.
+The archived four-candidate file has SHA-256 `ed590ea6f174c46da21b7c37d05288a3683900b907892e3b397f250cb9aebc42`. It is a knowledge-audit candidate format, not schema-valid v2 scored JSONL, and it lacks redistribution-license fields. The executed audit record has SHA-256 `1c9b4ff2881ddd4a88ea295a5cb417ef8a98c52b3f7a87c12f22b70cec9cb26b`; all four facts were audited, but only two passed the `recall_known` rule. The archive contains no saved full marginal/logit fixture. Accordingly, PR 1 uses self-authored synthetic v2 claims and synthetic saved marginals with `interpretation_allowed=false`. The historical inputs remain private provenance for a fresh, revision-pinned A100 parity capture and cannot be relabeled as a four-fact `DFI-Known` set.
 
 ## Notebook disposition
 
-Historical notebooks are not copied or edited. Package modules are the sole maintained source of scoring behavior. The eventual walkthrough is a thin, unexecuted client that imports package functions and reads sealed outputs; it contains no installation, Drive discovery, model implementation, or hidden scoring logic.
+Historical notebooks are not copied or edited. Package modules are the sole maintained source of scoring behavior. The walkthrough is a thin, unexecuted Colab orchestrator: per the requested ZIP workflow, it mounts Drive, verifies and extracts one explicitly named archive, installs the locked package, invokes public commands, and reads sealed outputs. It contains no model implementation, heuristic Drive discovery, or hidden scoring logic.

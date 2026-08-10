@@ -18,6 +18,20 @@ The real runner is implemented with a revision-pinned LLaDA loader, scalar full-
 
 Repository ZIPs must be produced with `git archive`. The exported `.git_archival.txt` records the exact commit through Git's `export-subst` mechanism, allowing runs from an unpacked archive and a non-editable install to retain commit provenance without bundling `.git`.
 
+## Colab ZIP workflow
+
+The walkthrough uses three explicit Drive artifacts and never searches for a latest file:
+
+```text
+MyDrive/DFI/DFI_A100_walkthrough.ipynb
+MyDrive/DFI/denoising-factual-instability-colab.zip
+MyDrive/DFI/denoising-factual-instability-colab.zip.sha256
+```
+
+Produce the ZIP from a clean committed tree with a fixed top-level directory, then create the SHA-256 sidecar. The notebook verifies the sidecar before extraction, rejects path traversal, reads the archive-expanded commit marker, and installs the lockfile non-editably. It requires a named A100 and BF16 before invoking the model. The repository ZIP, notebook, model weights, local run directories, and executed notebook output are not committed to Git.
+
+The default notebook flow runs the synthetic smoke config with bounded parity, then starts a fresh process without parity and requires zero covered inference forwards from the Drive cache. Its optional 4,096-request cell is a single performance-only execution, not the required five-warmup/three-repetition baseline.
+
 ## Cache contract
 
 The persistent result cache has one explicit root and two content levels:
