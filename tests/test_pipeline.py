@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -7,6 +8,7 @@ import numpy as np
 import pytest
 
 from dfi.evaluation import evaluate_rows
+from dfi.masking import canonical_json
 from dfi.pipeline import (
     cache_row_from_result,
     hydrate_cache_shards,
@@ -178,6 +180,45 @@ def test_run_bundle_rejects_duplicates_missing_rows_and_unjustified_gate(
             receipt={},
             expected_work_ids={"a" * 64, "b" * 64},
         )
+
+
+def test_run_bundle_allows_one_physical_result_for_distinct_logical_requests(
+    tmp_path: Path,
+) -> None:
+    first = _rows()[0]
+    second = {
+        **first,
+        "example_id": "supported-rephrased",
+        "family_id": "family-rephrased",
+        "paired_example_id": None,
+    }
+
+    def logical_id(row: dict[str, object]) -> str:
+        return hashlib.sha256(
+            canonical_json(
+                {
+                    "schema_version": "logical-request-v1",
+                    "example_id": row["example_id"],
+                    "arm": row["arm"],
+                    "mask_index": row["mask_index"],
+                }
+            )
+        ).hexdigest()
+
+    results, _ = write_run_bundle(
+        tmp_path / "logical-dedup",
+        [first, second],
+        receipt={"run_uuid": "logical-dedup"},
+        expected_work_ids={"a" * 64},
+        expected_logical_ids={logical_id(first), logical_id(second)},
+    )
+    rows = read_parquet_rows(results)
+    assert len(rows) == 2
+    assert {row["example_id"] for row in rows} == {
+        "supported",
+        "supported-rephrased",
+    }
+    assert {row["work_id"] for row in rows} == {"a" * 64}
 
 
 def test_cache_hydrates_isolates_corruption_and_repairs_one_partition(

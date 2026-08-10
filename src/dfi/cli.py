@@ -15,6 +15,7 @@ from pathlib import Path
 
 import numpy as np
 
+from dfi.config import load_config
 from dfi.data import load_jsonl
 from dfi.evaluation import evaluate_rows, reduce_claims
 from dfi.masking import (
@@ -31,6 +32,7 @@ from dfi.pipeline import (
     local_creation_environment,
     publish_cache_shard,
     read_parquet_rows,
+    run_experiment,
     sha256_file,
     validate_cache_manifest,
     write_run_bundle,
@@ -356,6 +358,19 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="dfi", description="Denoising Factual Instability")
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("check", help="run the offline analytic correctness fixture")
+    run_parser = subparsers.add_parser("run", help="run or resume pinned LLaDA inference")
+    run_parser.add_argument("config", type=Path, help="complete experiment TOML file")
+    run_parser.add_argument(
+        "--resume",
+        type=Path,
+        metavar="RUN_DIRECTORY",
+        help="resume an incomplete run directory",
+    )
+    run_parser.add_argument(
+        "--parity",
+        action="store_true",
+        help="run the bounded scalar/global parity gate on prior mask 0",
+    )
     return parser
 
 
@@ -375,7 +390,28 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "Smoke test only: synthetic marginals are not LLaDA output or scientific evidence."
             )
             return 0
-    except (OSError, ValueError) as exc:
+        if args.command == "run":
+            config = load_config(args.config)
+            run_directory = run_experiment(
+                config,
+                config_path=args.config,
+                resume_directory=args.resume,
+                run_parity=args.parity,
+            )
+            receipt = json.loads((run_directory / "run.json").read_text(encoding="utf-8"))
+            print(f"DFI run complete: {run_directory}")
+            print(
+                f"  {receipt['requests']['logical_requests']} logical / "
+                f"{receipt['requests']['unique_requests']} unique requests / "
+                f"{receipt['requests']['forwards']} model forwards"
+            )
+            print(
+                f"  cache hits={receipt['cache']['hits']} "
+                f"misses={receipt['cache']['misses']} uploads={receipt['cache']['uploaded_shards']}"
+            )
+            print("  interpretation_allowed: false")
+            return 0
+    except (OSError, RuntimeError, ValueError) as exc:
         print(f"dfi: {exc}", file=sys.stderr)
         return 1
     return 2

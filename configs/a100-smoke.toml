@@ -1,0 +1,31 @@
+config_version = 1
+seed = 7
+output_root = "../runs"
+
+[dataset]
+path = "../data/fixtures/anchors.jsonl"
+
+[model]
+repository = "GSAI-ML/LLaDA-8B-Base"
+revision = "0f2787f2d87eac5eed8a087d5ecd24277e6255b2"
+tokenizer_revision = "0f2787f2d87eac5eed8a087d5ecd24277e6255b2"
+remote_code_revision = "0f2787f2d87eac5eed8a087d5ecd24277e6255b2"
+
+[scoring]
+protocol = "analytic-v1"
+arms = ["prior"]
+mask_policy = "fixed-v1"
+n_masks = 32
+temperature = 1.0
+prompt_protocol = "claim-prefix-v1"
+
+[runtime]
+dtype = "bfloat16"
+# Provisional for the first measured A100 baseline; it is not an accepted default yet.
+max_batch_tokens = 8192
+max_batch_rows = 64
+partition_requests = 4096
+
+[cache]
+backend = "google_drive"
+root = "/content/drive/MyDrive/DFI/cache-v1"
