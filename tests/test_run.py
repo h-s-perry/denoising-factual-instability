@@ -486,7 +486,7 @@ def test_interrupted_run_resumes_exact_local_partitions(tmp_path: Path) -> None:
     assert receipt["resume"]["resume_count"] == 1
     assert receipt["requests"]["completed_requests"] == 16
     assert receipt["requests"]["computed_requests"] == 16
-    assert receipt["requests"]["inference_forwards"] == 5
+    assert receipt["requests"]["inference_forwards"] == 6
 
 
 def test_runner_halves_once_on_oom_and_fails_if_oom_recurs() -> None:
@@ -494,7 +494,7 @@ def test_runner_halves_once_on_oom_and_fails_if_oom_recurs() -> None:
     requests = tuple(
         backend.prepare_request(
             example_id=f"example-{index}",
-            claim=f"Claim {index}",
+            claim="Same claim",
             evidence=None,
             arm="prior",
             choice=MaskChoice(index, 0.4 + index * 0.01, (0,)),

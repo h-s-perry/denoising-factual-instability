@@ -2039,7 +2039,7 @@ def _telemetry_receipt(telemetry: InferenceTelemetry) -> dict[str, Any]:
     padding_ratio = 0.0 if not padded else (padded - telemetry.real_tokens) / padded
     rows = telemetry.batch_rows
     return {
-        "strategy": "global-length-bucket-token-budget-v1",
+        "strategy": "global-exact-length-token-budget-v1",
         "successful_batches": telemetry.successful_batches,
         "rows_per_batch": {
             "minimum": min(rows) if rows else 0,

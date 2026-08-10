@@ -221,12 +221,15 @@ def plan_length_buckets(
     *,
     max_batch_tokens: int,
     max_batch_rows: int,
-    bucket_width: int = 64,
+    bucket_width: int = 1,
 ) -> tuple[tuple[WorkRequest, ...], ...]:
-    """Deterministically bucket and greedily batch unpadded requests.
+    """Deterministically bucket and greedily batch equal-length requests.
 
-    The token budget is the physical padded size: rows times maximum length.
-    Sorting by semantic work ID makes the physical plan independent of input order.
+    The pinned LLaDA checkpoint can use a different attention kernel when a
+    batch contains right padding, which is not numerically equivalent to the
+    unpadded scalar reference. The safe default therefore uses exact token
+    lengths. Sorting by semantic work ID makes the physical plan independent
+    of input order.
     """
 
     for name, value in {
@@ -764,8 +767,12 @@ class LLaDABackend:
         for request in requests:
             self._validate_request_for_model(request)
 
+        lengths = {request.sequence_length for request in requests}
+        if len(lengths) != 1:
+            raise ValueError("LLaDA batches must contain equal-length requests")
+
         torch = self._torch
-        max_length = max(request.sequence_length for request in requests)
+        max_length = requests[0].sequence_length
         input_ids = torch.full(
             (len(requests), max_length),
             self.pad_token_id,
@@ -829,7 +836,7 @@ class LLaDABackend:
         self,
         requests: Sequence[WorkRequest],
     ) -> tuple[AnalyticResult, ...]:
-        """Run one right-padded, single-forward physical batch in caller order."""
+        """Run one equal-length, single-forward physical batch in caller order."""
 
         work_ids = [request.work_id for request in requests]
         if len(work_ids) != len(set(work_ids)):
@@ -842,7 +849,7 @@ class LLaDABackend:
         *,
         max_batch_tokens: int,
         max_batch_rows: int,
-        bucket_width: int = 64,
+        bucket_width: int = 1,
     ) -> tuple[AnalyticResult, ...]:
         """Run deterministic length-bucketed batches and restore caller order."""
 
