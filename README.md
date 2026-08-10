@@ -31,14 +31,20 @@ reviewed v2 JSONL
 
 ## First A100 run
 
-Use the unexecuted [Colab walkthrough](notebooks/walkthrough.ipynb) to verify a Drive-hosted repository ZIP, stage it on `/content` local SSD, install the locked GPU environment, and run the complete smoke/cache flow. The equivalent runner command after Drive is mounted and the repository is unpacked is:
+Use the [Colab walkthrough](notebooks/walkthrough.ipynb) to verify a Drive-hosted repository ZIP, stage it on `/content` local SSD, install the locked GPU environment, and run the complete smoke/cache flow. The equivalent demonstration command after Drive is mounted and the repository is unpacked is:
 
 ```bash
 uv sync --frozen --extra gpu --no-editable
+uv run --no-sync dfi run configs/a100-smoke.toml
+```
+
+The runner loads one pinned LLaDA model/tokenizer/remote-code commit in BF16, performs full-logit analytic scoring, seals local results, and publishes immutable cache shards to the explicit Drive root in the config. Run the same config again from a fresh local session to test zero-forward Drive reuse. The separate manual acceptance command is:
+
+```bash
 uv run --no-sync dfi run configs/a100-smoke.toml --parity
 ```
 
-The runner loads one pinned LLaDA model/tokenizer/remote-code commit in BF16, performs full-logit analytic scoring, seals local results, and publishes immutable cache shards to the explicit Drive root in the config. `--parity` is bounded to prior-arm mask 0 and checks scalar/global identities, numeric agreement, claim ordering, and matched-pair decisions. Run the same config again without `--parity` from a fresh local session to test zero-forward Drive reuse.
+`--parity` is bounded to prior-arm mask 0 and checks scalar/global identities, numeric agreement, claim ordering, and matched-pair decisions. It is not a prerequisite for completing the demonstration and must not be reported as passed unless its A100 gate succeeds.
 
 The checked-in smoke dataset is synthetic: eight claims in four matched families. A successful model run validates execution, not the blueprint's audited-anchor or scientific-admission gate. `configs/a100-throughput.toml` is a separate performance-only 4,096-request workload; its provisional batch limits are not accepted defaults until the named-A100 baseline is recorded.
 

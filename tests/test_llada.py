@@ -385,7 +385,7 @@ def test_loader_pins_all_assets_and_restores_scoped_compatibility(
                 "revision": REVISION,
                 "code_revision": CODE_REVISION,
                 "trust_remote_code": True,
-                "torch_dtype": torch.bfloat16,
+                "dtype": torch.bfloat16,
                 "low_cpu_mem_usage": True,
             },
         )
@@ -578,10 +578,11 @@ def test_scalar_and_global_paths_match_full_logit_reference() -> None:
         [second, first],
         max_batch_tokens=16,
         max_batch_rows=8,
+        bucket_width=64,
     )
     assert tuple(result.work_id for result in global_results) == (second.work_id, first.work_id)
-    with pytest.raises(ValueError, match="equal-length"):
-        backend.infer_batch([second, first])
+    direct_batch = backend.infer_batch([second, first])
+    assert tuple(result.work_id for result in direct_batch) == (second.work_id, first.work_id)
     global_first = global_results[1]
     assert global_first.target_ids == scalar.target_ids
     assert global_first.top_ids == scalar.top_ids
@@ -685,16 +686,16 @@ def test_manual_parity_gate_returns_canonical_pass_report() -> None:
 
     assert report["passed"] is True
     assert report["failure_count"] == 0
-    assert report["forward_counts"] == {"scalar": 2, "batched": 2}
+    assert report["forward_counts"] == {"scalar": 2, "batched": 1}
     assert report["batch_plan"] == {
-        "batch_count": 2,
-        "rows_per_batch": [1, 1],
-        "padded_tokens_per_batch": [2, 4],
+        "batch_count": 1,
+        "rows_per_batch": [2],
+        "padded_tokens_per_batch": [8],
     }
     assert all(report["exact_checks"].values())
     assert all(value == 0.0 for value in report["numeric_checks"]["max_absolute_error"].values())
     assert json.loads(canonical_json(report)) == report
-    assert len(model.calls) == 4
+    assert len(model.calls) == 3
 
 
 def test_manual_parity_gate_fails_closed_on_exact_identity_mismatch(

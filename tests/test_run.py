@@ -9,11 +9,18 @@ from typing import Any
 import numpy as np
 import pytest
 
+import dfi.cli as cli
 import dfi.pipeline as pipeline
 from dfi.cli import main
 from dfi.config import DFIConfig, load_config
 from dfi.data import load_jsonl
-from dfi.llada import AnalyticResult, LLaDAModelSpec, WorkRequest, plan_length_buckets
+from dfi.llada import (
+    AnalyticResult,
+    LLaDAModelSpec,
+    ParityMismatchError,
+    WorkRequest,
+    plan_length_buckets,
+)
 from dfi.masking import MaskChoice, stable_work_id
 from dfi.pipeline import (
     build_inference_plan,
@@ -486,7 +493,7 @@ def test_interrupted_run_resumes_exact_local_partitions(tmp_path: Path) -> None:
     assert receipt["resume"]["resume_count"] == 1
     assert receipt["requests"]["completed_requests"] == 16
     assert receipt["requests"]["computed_requests"] == 16
-    assert receipt["requests"]["inference_forwards"] == 6
+    assert receipt["requests"]["inference_forwards"] == 5
 
 
 def test_runner_halves_once_on_oom_and_fails_if_oom_recurs() -> None:
@@ -494,7 +501,7 @@ def test_runner_halves_once_on_oom_and_fails_if_oom_recurs() -> None:
     requests = tuple(
         backend.prepare_request(
             example_id=f"example-{index}",
-            claim="Same claim",
+            claim=f"Claim {index}",
             evidence=None,
             arm="prior",
             choice=MaskChoice(index, 0.4 + index * 0.01, (0,)),
@@ -521,3 +528,30 @@ def test_runner_halves_once_on_oom_and_fails_if_oom_recurs() -> None:
             max_batch_tokens=64,
             max_batch_rows=4,
         )
+
+
+def test_cli_summarizes_parity_failure_without_traceback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    config_path, _ = _write_config(tmp_path)
+    report = {
+        "failure_count": 107,
+        "failures": ["numeric mismatch"],
+        "exact_checks": {"work_ids": True},
+        "numeric_checks": {"max_absolute_error": {"ce": 0.07}},
+        "batch_plan": {"batch_count": 1},
+    }
+
+    def fail(*args: Any, **kwargs: Any) -> Path:
+        del args, kwargs
+        raise ParityMismatchError(report)
+
+    monkeypatch.setattr(cli, "run_experiment", fail)
+    assert cli.main(["run", str(config_path), "--parity"]) == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "scalar/global parity gate failed" in captured.err
+    assert '"failed_comparisons": 107' in captured.err
+    assert "Traceback" not in captured.err

@@ -18,6 +18,7 @@ import numpy as np
 from dfi.config import load_config
 from dfi.data import load_jsonl
 from dfi.evaluation import evaluate_rows, reduce_claims
+from dfi.llada import ParityMismatchError
 from dfi.masking import (
     MaskChoice,
     align_word_pieces,
@@ -420,6 +421,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             evaluation = evaluate_run_bundle(args.run_directory)
             print(json.dumps(evaluation, sort_keys=True, indent=2, allow_nan=False))
             return 0
+    except ParityMismatchError as exc:
+        report = exc.report
+        summary = {
+            "status": "failed",
+            "failed_comparisons": report.get("failure_count"),
+            "exact_checks": report.get("exact_checks"),
+            "numeric_checks": report.get("numeric_checks"),
+            "batch_plan": report.get("batch_plan"),
+        }
+        print("dfi: scalar/global parity gate failed", file=sys.stderr)
+        print(json.dumps(summary, sort_keys=True, indent=2, allow_nan=False), file=sys.stderr)
+        return 1
     except (OSError, RuntimeError, ValueError) as exc:
         print(f"dfi: {exc}", file=sys.stderr)
         return 1

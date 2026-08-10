@@ -30,7 +30,7 @@ MyDrive/DFI/denoising-factual-instability-colab.zip.sha256
 
 Produce the ZIP from a clean committed tree with a fixed top-level directory, then create the SHA-256 sidecar. The notebook verifies the sidecar before extraction, rejects path traversal, reads the archive-expanded commit marker, and installs the lockfile non-editably. It requires a named A100 and BF16 before invoking the model. The repository ZIP, notebook, model weights, local run directories, and executed notebook output are not committed to Git.
 
-The default notebook flow runs the synthetic smoke config with bounded parity, then starts a fresh process without parity and requires zero covered inference forwards from the Drive cache. Its optional 4,096-request cell is a single performance-only execution, not the required five-warmup/three-repetition baseline.
+The default notebook flow runs the synthetic smoke config without the separate manual parity gate, then starts a fresh process and requires zero covered inference forwards from the Drive cache. Its optional 4,096-request cell is a single performance-only execution, not the required five-warmup/three-repetition baseline. Scalar/global BF16 parity remains a distinct A100 acceptance command and is not established by completing the walkthrough.
 
 ## Cache contract
 
@@ -58,6 +58,8 @@ Before the real runner is accepted, use `GSAI-ML/LLaDA-8B-Base` with literal mod
 - rejection and recomputation of a deliberately corrupt shard.
 
 The checked-in `a100-smoke.toml` uses four synthetic matched families and therefore cannot satisfy the audited-anchor clause. Its parity selection is deliberately bounded to one prior mask for each of the eight claims. The separate `a100-throughput.toml` expands the same synthetic inputs to exactly 4,096 deterministic physical requests for performance measurement only; it is not scientific evidence.
+
+The initial A100 walkthrough trials showed that `rtol=1e-3`, `atol=1e-3` is not supported for BF16 scalar-versus-multirow inference: removing mixed-length padding changed the discrepancies but did not eliminate them. This is one systemic numerical parity failure expressed across many token/metric comparisons, not evidence of many independent request-planning bugs. No wider tolerance is accepted from those trials, and the parity gate remains unresolved pending repeated scalar/scalar, batch/batch, and scalar/batch characterization on the named A100 before throughput results are inspected.
 
 The fixed throughput gate requires five warm-up batches and three full timed repetitions. Record active wall time, physical requests/second, forward count, peak VRAM, padding ratio, result-write time, and uploader stalls. No absolute speed or accepted batch-token default exists before that receipt. The local development environment has no CUDA/A100, so no A100 receipt is claimed by repository tests.
 
