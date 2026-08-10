@@ -1,0 +1,762 @@
+{
+    "schema_version": "fixed-masks-v1",
+    "fixture_kind": "synthetic-correctness-smoke",
+    "tokenizer": "synthetic-offset-tokenizer-v1",
+    "mask_token_id": 99,
+    "work_identity": {
+        "scoring_protocol": "analytic-v1",
+        "model_repository": "synthetic/saved-marginals",
+        "model_revision": "synthetic-v1",
+        "tokenizer_revision": "synthetic-v1",
+        "remote_code_revision": "synthetic-v1",
+        "prompt_protocol": "claim-prefix-v1",
+        "mask_policy": "fixed-fixture-v1",
+        "temperature": 1.0,
+        "dtype": "float64",
+        "inference_backend": "saved-marginals-v1"
+    },
+    "mask_policy_probe": {
+        "text": "One synthetic claim has several content words.",
+        "example_id": "mask-policy-probe",
+        "arm": "prior",
+        "seed": 7,
+        "n_masks": 4,
+        "expected": [
+            {
+                "mask_index": 0,
+                "mask_rate": 0.3572114630336358,
+                "word_indices": [
+                    1,
+                    3,
+                    5
+                ]
+            },
+            {
+                "mask_index": 1,
+                "mask_rate": 0.4346862665701139,
+                "word_indices": [
+                    2,
+                    3,
+                    5
+                ]
+            },
+            {
+                "mask_index": 2,
+                "mask_rate": 0.456596030196209,
+                "word_indices": [
+                    3,
+                    4,
+                    5
+                ]
+            },
+            {
+                "mask_index": 3,
+                "mask_rate": 0.5006438363360246,
+                "word_indices": [
+                    0,
+                    3,
+                    4,
+                    5
+                ]
+            }
+        ]
+    },
+    "requests": [
+        {
+            "request_id": "alder-supported-mask-0000",
+            "example_id": "alder-supported",
+            "arm": "prior",
+            "mask_index": 0,
+            "mask_rate": 0.5,
+            "text": "In the synthetic ledger, Alder maps to 17.",
+            "token_ids": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                0,
+                1,
+                2,
+                3
+            ],
+            "offsets": [
+                [
+                    0,
+                    2
+                ],
+                [
+                    3,
+                    6
+                ],
+                [
+                    7,
+                    16
+                ],
+                [
+                    17,
+                    23
+                ],
+                [
+                    23,
+                    24
+                ],
+                [
+                    25,
+                    30
+                ],
+                [
+                    31,
+                    35
+                ],
+                [
+                    36,
+                    38
+                ],
+                [
+                    39,
+                    40
+                ],
+                [
+                    40,
+                    41
+                ],
+                [
+                    41,
+                    42
+                ]
+            ],
+            "mask_word_indices": [
+                8
+            ],
+            "piece_indices": [
+                8,
+                9
+            ],
+            "target_ids": [
+                1,
+                2
+            ],
+            "masked_input_ids": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                0,
+                99,
+                99,
+                3
+            ],
+            "total_maskable_pieces": 9,
+            "expected_work_id": "789191c99eb553e0785208f3981ee6409f0c9cf5ebb9aed6d1f8591b00f5fde1"
+        },
+        {
+            "request_id": "alder-refuted-mask-0000",
+            "example_id": "alder-refuted",
+            "arm": "prior",
+            "mask_index": 0,
+            "mask_rate": 0.5,
+            "text": "In the synthetic ledger, Alder maps to 19.",
+            "token_ids": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "offsets": [
+                [
+                    0,
+                    2
+                ],
+                [
+                    3,
+                    6
+                ],
+                [
+                    7,
+                    16
+                ],
+                [
+                    17,
+                    23
+                ],
+                [
+                    23,
+                    24
+                ],
+                [
+                    25,
+                    30
+                ],
+                [
+                    31,
+                    35
+                ],
+                [
+                    36,
+                    38
+                ],
+                [
+                    39,
+                    40
+                ],
+                [
+                    40,
+                    41
+                ],
+                [
+                    41,
+                    42
+                ]
+            ],
+            "mask_word_indices": [
+                8
+            ],
+            "piece_indices": [
+                8,
+                9
+            ],
+            "target_ids": [
+                3,
+                4
+            ],
+            "masked_input_ids": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                0,
+                1,
+                2,
+                99,
+                99,
+                5
+            ],
+            "total_maskable_pieces": 9,
+            "expected_work_id": "1078ef8ea92eaeb59d0168bc53dc7d17d9593ee6fd52bb5f06da8fc177a15095"
+        },
+        {
+            "request_id": "oris-supported-mask-0000",
+            "example_id": "oris-supported",
+            "arm": "prior",
+            "mask_index": 0,
+            "mask_rate": 0.5,
+            "text": "The fictional moon Oris has two rings.",
+            "token_ids": [
+                4,
+                5,
+                6,
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "offsets": [
+                [
+                    0,
+                    3
+                ],
+                [
+                    4,
+                    13
+                ],
+                [
+                    14,
+                    18
+                ],
+                [
+                    19,
+                    23
+                ],
+                [
+                    24,
+                    27
+                ],
+                [
+                    28,
+                    29
+                ],
+                [
+                    29,
+                    31
+                ],
+                [
+                    32,
+                    37
+                ],
+                [
+                    37,
+                    38
+                ]
+            ],
+            "mask_word_indices": [
+                5
+            ],
+            "piece_indices": [
+                5,
+                6
+            ],
+            "target_ids": [
+                2,
+                3
+            ],
+            "masked_input_ids": [
+                4,
+                5,
+                6,
+                0,
+                1,
+                99,
+                99,
+                4,
+                5
+            ],
+            "total_maskable_pieces": 8,
+            "expected_work_id": "ca77d1176f000c7ef6a84f6c788e61b808cc139da0b514f67d8ca94549a1ab02"
+        },
+        {
+            "request_id": "oris-refuted-mask-0000",
+            "example_id": "oris-refuted",
+            "arm": "prior",
+            "mask_index": 0,
+            "mask_rate": 0.5,
+            "text": "The fictional moon Oris has three rings.",
+            "token_ids": [
+                6,
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                0
+            ],
+            "offsets": [
+                [
+                    0,
+                    3
+                ],
+                [
+                    4,
+                    13
+                ],
+                [
+                    14,
+                    18
+                ],
+                [
+                    19,
+                    23
+                ],
+                [
+                    24,
+                    27
+                ],
+                [
+                    28,
+                    30
+                ],
+                [
+                    30,
+                    33
+                ],
+                [
+                    34,
+                    39
+                ],
+                [
+                    39,
+                    40
+                ]
+            ],
+            "mask_word_indices": [
+                5
+            ],
+            "piece_indices": [
+                5,
+                6
+            ],
+            "target_ids": [
+                4,
+                5
+            ],
+            "masked_input_ids": [
+                6,
+                0,
+                1,
+                2,
+                3,
+                99,
+                99,
+                6,
+                0
+            ],
+            "total_maskable_pieces": 8,
+            "expected_work_id": "3bf70f93590c9b5a55d1478cb3df698d99b569e27bcf34be3beec6b10b8f5588"
+        },
+        {
+            "request_id": "flag-supported-mask-0000",
+            "example_id": "flag-supported",
+            "arm": "prior",
+            "mask_index": 0,
+            "mask_rate": 0.5,
+            "text": "Synthetic protocol Q sets flag K to positive.",
+            "token_ids": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                0,
+                1,
+                2,
+                3
+            ],
+            "offsets": [
+                [
+                    0,
+                    9
+                ],
+                [
+                    10,
+                    18
+                ],
+                [
+                    19,
+                    20
+                ],
+                [
+                    21,
+                    25
+                ],
+                [
+                    26,
+                    30
+                ],
+                [
+                    31,
+                    32
+                ],
+                [
+                    33,
+                    35
+                ],
+                [
+                    36,
+                    40
+                ],
+                [
+                    40,
+                    44
+                ],
+                [
+                    44,
+                    45
+                ]
+            ],
+            "mask_word_indices": [
+                7
+            ],
+            "piece_indices": [
+                7,
+                8
+            ],
+            "target_ids": [
+                1,
+                2
+            ],
+            "masked_input_ids": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                0,
+                99,
+                99,
+                3
+            ],
+            "total_maskable_pieces": 9,
+            "expected_work_id": "f9bb874eea477a75cf938dab14ad2a33ab63f274e519811067dd7a74b5c8897d"
+        },
+        {
+            "request_id": "flag-refuted-mask-0000",
+            "example_id": "flag-refuted",
+            "arm": "prior",
+            "mask_index": 0,
+            "mask_rate": 0.5,
+            "text": "Synthetic protocol Q sets flag K to negative.",
+            "token_ids": [
+                3,
+                4,
+                5,
+                6,
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "offsets": [
+                [
+                    0,
+                    9
+                ],
+                [
+                    10,
+                    18
+                ],
+                [
+                    19,
+                    20
+                ],
+                [
+                    21,
+                    25
+                ],
+                [
+                    26,
+                    30
+                ],
+                [
+                    31,
+                    32
+                ],
+                [
+                    33,
+                    35
+                ],
+                [
+                    36,
+                    40
+                ],
+                [
+                    40,
+                    44
+                ],
+                [
+                    44,
+                    45
+                ]
+            ],
+            "mask_word_indices": [
+                7
+            ],
+            "piece_indices": [
+                7,
+                8
+            ],
+            "target_ids": [
+                3,
+                4
+            ],
+            "masked_input_ids": [
+                3,
+                4,
+                5,
+                6,
+                0,
+                1,
+                2,
+                99,
+                99,
+                5
+            ],
+            "total_maskable_pieces": 9,
+            "expected_work_id": "00c79cc168cb29262a418794b30125a9a65982760c22faabea0801001981bfd0"
+        },
+        {
+            "request_id": "order-supported-mask-0000",
+            "example_id": "order-supported",
+            "arm": "prior",
+            "mask_index": 0,
+            "mask_rate": 0.5,
+            "text": "In the toy ordering, Cedar precedes Birch.",
+            "token_ids": [
+                5,
+                6,
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                0
+            ],
+            "offsets": [
+                [
+                    0,
+                    2
+                ],
+                [
+                    3,
+                    6
+                ],
+                [
+                    7,
+                    10
+                ],
+                [
+                    11,
+                    19
+                ],
+                [
+                    19,
+                    20
+                ],
+                [
+                    21,
+                    26
+                ],
+                [
+                    27,
+                    31
+                ],
+                [
+                    31,
+                    35
+                ],
+                [
+                    36,
+                    41
+                ],
+                [
+                    41,
+                    42
+                ]
+            ],
+            "mask_word_indices": [
+                6
+            ],
+            "piece_indices": [
+                6,
+                7
+            ],
+            "target_ids": [
+                4,
+                5
+            ],
+            "masked_input_ids": [
+                5,
+                6,
+                0,
+                1,
+                2,
+                3,
+                99,
+                99,
+                6,
+                0
+            ],
+            "total_maskable_pieces": 8,
+            "expected_work_id": "f23ab7670ea5b4d66dbf41a7a745b56c096fa94d0cba3665f1fbc0de0ad60c4e"
+        },
+        {
+            "request_id": "order-refuted-mask-0000",
+            "example_id": "order-refuted",
+            "arm": "prior",
+            "mask_index": 0,
+            "mask_rate": 0.5,
+            "text": "In the toy ordering, Cedar follows Birch.",
+            "token_ids": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                0,
+                1,
+                2
+            ],
+            "offsets": [
+                [
+                    0,
+                    2
+                ],
+                [
+                    3,
+                    6
+                ],
+                [
+                    7,
+                    10
+                ],
+                [
+                    11,
+                    19
+                ],
+                [
+                    19,
+                    20
+                ],
+                [
+                    21,
+                    26
+                ],
+                [
+                    27,
+                    30
+                ],
+                [
+                    30,
+                    34
+                ],
+                [
+                    35,
+                    40
+                ],
+                [
+                    40,
+                    41
+                ]
+            ],
+            "mask_word_indices": [
+                6
+            ],
+            "piece_indices": [
+                6,
+                7
+            ],
+            "target_ids": [
+                6,
+                0
+            ],
+            "masked_input_ids": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                99,
+                99,
+                1,
+                2
+            ],
+            "total_maskable_pieces": 8,
+            "expected_work_id": "ce9ae3b175d54fc7fec6e967485abc72ab1500c5567903c9304b63cfbd4bb5f8"
+        }
+    ]
+}

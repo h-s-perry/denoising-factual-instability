@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  cpu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v9.0.0
+        with:
+          python-version: "3.11"
+          enable-cache: true
+      - name: Install locked development environment
+        run: uv sync --frozen --extra dev --no-editable
+      - name: Format and lint
+        run: |
+          uv run --no-sync ruff format --check .
+          uv run --no-sync ruff check .
+      - name: Unit and contract tests
+        run: uv run --no-sync pytest
+      - name: Offline analytic check
+        run: uv run --no-sync dfi check
+      - name: Build package
+        run: uv build
+      - name: Clean wheel install and check
+        run: |
+          uv venv --python 3.11 .wheel-venv
+          uv pip install --python .wheel-venv/bin/python dist/*.whl
+          .wheel-venv/bin/dfi check

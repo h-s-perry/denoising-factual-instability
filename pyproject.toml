@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "denoising-factual-instability"
+version = "0.1.0.dev0"
+description = "Performance-first analytic factual-risk scoring with masked diffusion language models."
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+authors = [{name = "DFI contributors"}]
+dependencies = [
+  "jsonschema[format]>=4.23,<5",
+  "numpy>=1.26,<3",
+  "pyarrow>=17,<22",
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2,<2",
+  "pytest>=8.3,<9",
+  "ruff>=0.8,<1",
+]
+
+[project.scripts]
+dfi = "dfi.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dfi"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"data/dfi-v2.schema.json" = "dfi/dfi-v2.schema.json"
+"data/fixtures" = "dfi/fixtures"
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.ruff.format]
+quote-style = "double"

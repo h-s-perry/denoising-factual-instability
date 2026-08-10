@@ -1,0 +1,33 @@
+.DS_Store
+.venv/
+.wheel-venv/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Local and remote-derived research state.
+runs/
+.partial/
+cache/
+*.parquet
+!data/fixtures/*.parquet
+
+# Model and credential material must never enter Git.
+.env
+.env.*
+*.pem
+*.key
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+pytorch_model*.bin
+huggingface/
+models/
