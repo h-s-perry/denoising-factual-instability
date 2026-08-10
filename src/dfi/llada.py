@@ -29,7 +29,7 @@ LLADA_MASK_TOKEN_ID = 126336
 LLADA_PROTOCOL_MAX_LENGTH = 512
 PROMPT_PROTOCOL = "claim-prefix-v1"
 SCORING_PROTOCOL = "analytic-v1"
-INFERENCE_BACKEND = "llada-full-logits-v1"
+INFERENCE_BACKEND = "llada-full-logits-v2"
 DTYPE_NAME = "bfloat16"
 TEMPERATURE = 1.0
 

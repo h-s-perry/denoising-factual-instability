@@ -135,7 +135,7 @@ class FakeBackend:
             target_ids=(target,),
             temperature=1.0,
             dtype="bfloat16",
-            inference_backend="llada-full-logits-v1",
+            inference_backend="llada-full-logits-v2",
         )
         return WorkRequest(
             work_id=work_id,
